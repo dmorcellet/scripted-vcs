@@ -1,0 +1,2 @@
+find . -perm -0200 \( -name "*.*xx" -o -name makefile \)
+

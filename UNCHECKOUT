@@ -1,0 +1,54 @@
+#!/bin/csh -f
+
+if (-w $1) then
+
+  # ---
+  # Le fichier est en checkout, on peut y aller...
+  # ---
+
+  # Autoriser l'écriture dans le répertoire
+  chmod u+w `dirname $1`
+
+  # Calculer le numéro de la dernière modification
+  set n=1
+  set nomFichierDiff = `dirname $1`/diff`basename $1`
+  while ( -e $nomFichierDiff-$n)
+    @ n++
+  end
+  @ n--
+  # n vaut 0 si pas de modifications, ou vaut le nombre de modifications
+
+  # Suppression du fichier courant
+  \rm -f $1
+
+  # Reconstituer la dernière version stable du fichier
+  if ($n == 0) then
+    # Aucune modification mémorisée, on reprends le fichier orig
+    # qui est ensuite détruit
+    cp $1.orig $1
+    \rm -f $1.orig
+  else
+    # On repart du fichier orig auquel on applique les modifications
+    # enregistrées
+    cp $1.orig $1
+    set i=1
+    while ($i <= $n)
+      GENERATE $1 $nomFichierDiff-$i > $1.tmp
+      mv $1.tmp $1
+      @ i++
+    end
+  endif
+
+  # Le fichier passe en read-only
+  chmod u-w $1
+  
+  # Ne plus autoriser l'écriture dans le répertoire
+  chmod u-w `dirname $1`
+else
+
+  # ---
+  # Le fichier n'est pas en check-out, message d'erreur
+  # ---
+
+  echo "Le fichier "$1" n'est pas en check-out"
+endif

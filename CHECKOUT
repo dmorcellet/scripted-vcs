@@ -1,0 +1,32 @@
+#!/bin/csh -f
+
+foreach k ($*)
+
+if (!(-w $k)) then
+
+  # ---
+  # Le fichier n'est pas en checkout, on peut y aller...
+  # ---
+
+  # Autoriser l'écriture dans le répertoire
+  chmod u+w `dirname $k`
+
+  # Si c'est la première modification, créer un original
+  if (!( -e $k.orig)) then
+    cp $k $k.orig
+  endif
+
+  # Autoriser l'écriture dans le fichier en check-out
+  chmod u+w $k
+
+  # Ne plus autoriser l'écriture dans le répertoire
+  chmod u-w `dirname $k`
+else
+
+  # ---
+  # Le fichier est déjà en checkout, message d'erreur
+  # ---
+
+  echo "Le fichier "$k" est déjà en check-out"
+endif
+end

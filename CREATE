@@ -1,0 +1,6 @@
+#!/bin/sh
+
+chmod u+w `dirname $1`
+touch $1
+chmod u+rw $1
+chmod u-w `dirname $1`

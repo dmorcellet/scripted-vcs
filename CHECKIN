@@ -1,0 +1,51 @@
+#!/bin/csh -f
+
+foreach k ($*)
+
+if (-w $k) then
+
+  # ---
+  # Le fichier est en checkout, on peut y aller...
+  # ---
+
+  # Autoriser l'écriture dans le répertoire
+  chmod u+w `dirname $k`
+
+  # Calculer le numéro de la modification
+  set n=1
+  set nomFichierDiff = `dirname $k`/diff`basename $k`
+  while ( -e $nomFichierDiff-$n)
+    @ n++
+  end
+
+  # Générer le fichier diff entre la dernière version stable et la version actuelle
+  # Pour cela, on reconstitue la dernière version stable (latest)
+  cp $k.orig $k.latest
+  chmod u+w $k.latest
+  set i=1
+  while ($i < $n)
+    GENERATE $k.latest $nomFichierDiff-$i > $k.tmp
+    mv $k.tmp $k.latest
+    @ i++
+  end
+  diff -e $k.latest $k > $nomFichierDiff-$n
+  \rm -f $k.latest
+
+  # Ne plus autoriser l'écriture dans le fichier en check-in
+  chmod uog-w $k
+  # Ne plus autoriser l'écriture dans le fichier diff nouvellement créé
+  chmod uog-w $nomFichierDiff-$n
+  # Ne plus autoriser l'écriture dans le répertoire
+  chmod uog-w `dirname $k`
+
+  echo "Le fichier '"$k"' est passé en check-in"
+else
+
+  # ---
+  # Le fichier n'est pas en check-out, message d'erreur
+  # ---
+
+  echo "Le fichier '"$k"' n'est pas en check-out"
+endif
+
+end

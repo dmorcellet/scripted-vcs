@@ -1,0 +1,11 @@
+#!/bin/csh -f
+
+if ("$1" == "") then
+  exit
+endif
+
+if ("$2" == "") then
+  exit
+endif
+
+(shift; cat $*; echo '1,$p') | ed - $1
